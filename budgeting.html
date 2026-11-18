@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Budgeting – ScroogeMap</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&family=Mrs+Saint+Delafield&family=Italianno&display=swap"
+        rel="stylesheet">
+    <link href="CSS/style.css" rel="stylesheet">
+</head>
+
+<body>
+    <header>
+        <div class="wrap">
+            <nav>
+                <a href="index.html" class="brand">
+                    <div class="logo-img"></div>
+                    <span class="logo"><span class="s">Scrooge</span><span class="m">Map</span></span>
+                </a>
+                <ul>
+                    <li><a href="mappa.html">Mappa</a></li>
+                    <li><a href="budgeting.html">Budgeting</a></li>
+                    <li><a href="#">Ricerca AI</a></li>
+                </ul>
+                <a class="btn" href="impostazioni.html">Impostazioni profilo</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="wrap">
+            <nav class="subnav" aria-label="Sezioni budgeting">
+                <button type="button" class="tab-btn is-active" data-view="spese" aria-pressed="true">Spese</button>
+                <button type="button" class="tab-btn" data-view="statistiche" aria-pressed="false">Statistiche</button>
+                <button type="button" class="tab-btn" data-view="report" aria-pressed="false">Report AI</button>
+            </nav>
+
+            <section id="view-spese" class="budget-view">
+                <div class="budget-intro">
+                    <h1>Gestisci le tue spese</h1>
+                    <p class="lead">Tieni traccia, confronta e risparmia ogni giorno</p>
+                </div>
+
+                <section class="budget-section card" aria-labelledby="add-expense-title">
+                    <h2 id="add-expense-title">Inserisci nuova spesa</h2>
+                    <form id="expense-form" class="expense-form" action="#" method="post">
+                        <div class="expense-form-grid">
+                            <div class="field">
+                                <label for="expense-title">Titolo</label>
+                                <input type="text" id="expense-title" name="title" required
+                                    placeholder="Es. Spesa supermercato">
+                            </div>
+                            <div class="field">
+                                <label for="expense-category">Categoria</label>
+                                <select id="expense-category" name="category" required>
+                                    <option value="">Seleziona una categoria</option>
+                                    <option value="Alimentari">Alimentari</option>
+                                    <option value="Carburanti">Carburanti</option>
+                                    <option value="Parcheggi">Parcheggi</option>
+                                    <option value="Casa">Casa</option>
+                                    <option value="Altro">Altro</option>
+                                </select>
+                            </div>
+                            <div class="field">
+                                <label for="expense-amount">Importo (€)</label>
+                                <input type="number" id="expense-amount" name="amount" required min="0.01" step="0.01"
+                                    placeholder="0,00">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn">Aggiungi spesa</button>
+                            <p id="expense-feedback" class="form-feedback" aria-live="polite"></p>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="budget-section card" aria-labelledby="expenses-list-title">
+                    <h2 id="expenses-list-title">Spese registrate</h2>
+                    <div class="table-wrap">
+                        <table class="expenses-table">
+                            <thead>
+                                <tr>
+                                    <th scope="col">Data</th>
+                                    <th scope="col">Titolo</th>
+                                    <th scope="col">Categoria</th>
+                                    <th scope="col" class="amount-col">Importo (€)</th>
+                                </tr>
+                            </thead>
+                            <tbody id="expenses-tbody"></tbody>
+                        </table>
+                    </div>
+                    <p id="expenses-empty" class="empty-state" hidden>Nessuna spesa registrata.</p>
+                </section>
+            </section>
+
+            <section id="view-statistiche" class="budget-view" hidden>
+                <div class="budget-intro">
+                    <h2 class="section-title">Statistiche</h2>
+                    <p class="lead">Analizza le tue abitudini di spesa e scopri dove puoi risparmiare.</p>
+                </div>
+
+                <section class="budget-section monthly-stats-section" aria-labelledby="monthly-stats-title">
+                    <h2 id="monthly-stats-title">Statistiche spese mensili</h2>
+                    <div class="kpi-grid">
+                        <div class="card kpi-card">
+                            <p class="kpi-label">Mese di riferimento</p>
+                            <p class="kpi-value" id="stat-month">Novembre 2026</p>
+                        </div>
+                        <div class="card kpi-card">
+                            <p class="kpi-label">Quanto si è speso</p>
+                            <p class="kpi-value" id="stat-spent">€ 0,00</p>
+                        </div>
+                        <div class="card kpi-card">
+                            <p class="kpi-label">Risparmiato usando ScroogeMap</p>
+                            <p class="kpi-value accent" id="stat-saved">€ 28,40</p>
+                        </div>
+                        <div class="card kpi-card">
+                            <p class="kpi-label">Quanto potresti risparmiare ancora</p>
+                            <p class="kpi-value accent-teal" id="stat-potential">€ 15,00</p>
+                        </div>
+                    </div>
+                </section>
+
+                <section class="budget-section card" aria-labelledby="category-stats-title">
+                    <h2 id="category-stats-title">Statistiche per categoria</h2>
+                    <div class="chart-layout chart-layout--stacked">
+                        <div class="pie-wrap">
+                            <div id="pie-chart" class="pie-chart" role="img"
+                                aria-label="Grafico a torta delle spese per categoria"></div>
+                            <p id="pie-total" class="pie-total"></p>
+                        </div>
+                        <div class="chart-legend-wrap">
+                            <ul id="chart-legend" class="chart-legend" aria-label="Legenda categorie di spesa"></ul>
+                            <p class="chart-note">I valori mostrano la distribuzione delle spese mensili per categoria.
+                            </p>
+                        </div>
+                    </div>
+                </section>
+            </section>
+
+            <section id="view-report" class="budget-view" hidden>
+                <div class="budget-intro">
+                    <h2 class="section-title">Report AI</h2>
+                    <p class="lead">Un resoconto chiaro delle tue spese con suggerimenti per risparmiare meglio.</p>
+                </div>
+
+                <section class="budget-section card report-card" aria-labelledby="ai-report-title">
+                    <div class="report-meta">
+                        <p class="report-badge">Ottobre 2026</p>
+                        <h2 id="ai-report-title">Resoconto spese</h2>
+                    </div>
+                    <div class="report-block report-body">
+                        <h3>Resoconto</h3>
+                        <h4>Panoramica</h4>
+                        <p>Nel mese di ottobre hai registrato una spesa complessiva di <strong>€ 318,60</strong>, con un
+                            risparmio stimato di <strong>€ 24,10</strong> grazie alla scelta di punti vendita più
+                            convenienti. L’andamento generale è in linea con il mese precedente, con una lieve riduzione
+                            sui carburanti.</p>
+                        <h4>Dove spendi di più</h4>
+                        <ul>
+                            <li><strong>Alimentari (46%)</strong>: voce principale, concentrata in 5 acquisti
+                                settimanali.</li>
+                            <li><strong>Carburanti (24%)</strong>: spesa stabile, con margine di risparmio sui
+                                distributori più vicini.</li>
+                            <li><strong>Parcheggi (15%)</strong>: costi più alti nelle fasce serali in centro.</li>
+                            <li><strong>Casa e Altro (15%)</strong>: spese occasionali non ricorrenti.</li>
+                        </ul>
+                        <h4>Consigli di risparmio</h4>
+                        <ul>
+                            <li>Confronta i prezzi dei prodotti alimentari prima della spesa: potresti risparmiare
+                                ancora circa <strong>€ 8,00</strong> al mese.</li>
+                            <li>Valuta distributori alternativi nel raggio di 1 km per ridurre la spesa carburante.</li>
+                            <li>Per le soste in centro, considera parcheggi con tariffa oraria più bassa segnalati nella
+                                mappa.</li>
+                        </ul>
+                    </div>
+                    <div class="report-block report-widget">
+                        <h3>Come viene generato il resoconto</h3>
+                        <p>Il report sintetizza in modo automatico le spese registrate, le categorie più rilevanti e i
+                            confronti prezzi disponibili su ScroogeMap. L’obiettivo è evidenziare le abitudini di spesa
+                            e proporre suggerimenti pratici per risparmiare, senza utilizzare servizi esterni in questo
+                            mockup.</p>
+                    </div>
+                </section>
+            </section>
+        </div>
+    </main>
+
+    <footer class="budget-footer">
+        <div class="wrap">
+            <span>© 2026 ScroogeMap · Ingegneria del Software 2026/2027</span>
+            <span>Lorenzo Predelli – Samuel Tardiota – Matteo Dallaserra</span>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            var expenses = [
+                { id: 1, date: '2026-11-02', title: 'Spesa settimanale', category: 'Alimentari', amount: 54.30 },
+                { id: 2, date: '2026-11-04', title: 'Rifornimento benzina', category: 'Carburanti', amount: 42.00 },
+                { id: 3, date: '2026-11-06', title: 'Parcheggio centro', category: 'Parcheggi', amount: 6.50 },
+                { id: 4, date: '2026-11-08', title: 'Spesa supermercato', category: 'Alimentari', amount: 38.90 },
+                { id: 5, date: '2026-11-10', title: 'Detersivi e casa', category: 'Casa', amount: 21.40 },
+                { id: 6, date: '2026-11-12', title: 'Pranzo veloce', category: 'Altro', amount: 12.00 },
+                { id: 7, date: '2026-11-14', title: 'Rifornimento diesel', category: 'Carburanti', amount: 47.20 },
+                { id: 8, date: '2026-11-15', title: 'Spesa locale', category: 'Alimentari', amount: 29.60 }
+            ];
+            var nextId = 9;
+
+            var categoryColors = {
+                'Alimentari': '#5f8a80',
+                'Carburanti': '#c8ae65',
+                'Parcheggi': '#8a877f',
+                'Casa': '#383735',
+                'Altro': '#b9b3a3'
+            };
+
+            var tabButtons = Array.prototype.slice.call(document.querySelectorAll('.tab-btn'));
+            var views = {
+                spese: document.getElementById('view-spese'),
+                statistiche: document.getElementById('view-statistiche'),
+                report: document.getElementById('view-report')
+            };
+            var tbody = document.getElementById('expenses-tbody');
+            var emptyMsg = document.getElementById('expenses-empty');
+            var form = document.getElementById('expense-form');
+            var feedback = document.getElementById('expense-feedback');
+
+            function formatEuro(value) {
+                return '€ ' + Number(value).toFixed(2).replace('.', ',');
+            }
+
+            function formatDate(iso) {
+                var parts = iso.split('-');
+                if (parts.length !== 3) return iso;
+                return parts[2] + '/' + parts[1] + '/' + parts[0];
+            }
+
+            function todayISO() {
+                var d = new Date();
+                var m = String(d.getMonth() + 1).padStart(2, '0');
+                var day = String(d.getDate()).padStart(2, '0');
+                return d.getFullYear() + '-' + m + '-' + day;
+            }
+
+            function renderTable() {
+                if (!expenses.length) {
+                    tbody.innerHTML = '';
+                    emptyMsg.hidden = false;
+                    return;
+                }
+                emptyMsg.hidden = true;
+                var rows = expenses.slice().sort(function (a, b) {
+                    return b.date.localeCompare(a.date) || b.id - a.id;
+                });
+                tbody.innerHTML = rows.map(function (e) {
+                    return '<tr>' +
+                        '<td>' + formatDate(e.date) + '</td>' +
+                        '<td>' + e.title + '</td>' +
+                        '<td>' + e.category + '</td>' +
+                        '<td class="amount-col">' + formatEuro(e.amount) + '</td>' +
+                        '</tr>';
+                }).join('');
+            }
+
+            function renderStats() {
+                var total = expenses.reduce(function (sum, e) { return sum + e.amount; }, 0);
+                var spentEl = document.getElementById('stat-spent');
+                if (spentEl) spentEl.textContent = formatEuro(total);
+
+                var totalsByCat = {};
+                expenses.forEach(function (e) {
+                    totalsByCat[e.category] = (totalsByCat[e.category] || 0) + e.amount;
+                });
+
+                var legend = document.getElementById('chart-legend');
+                var pie = document.getElementById('pie-chart');
+                var pieTotal = document.getElementById('pie-total');
+                if (!legend || !pie) return;
+
+                var entries = Object.keys(totalsByCat).map(function (cat) {
+                    return { cat: cat, amount: totalsByCat[cat] };
+                }).sort(function (a, b) { return b.amount - a.amount; });
+
+                if (!entries.length || total <= 0) {
+                    pie.style.background = 'var(--line)';
+                    pie.setAttribute('aria-label', 'Nessuna spesa disponibile per il grafico');
+                    pieTotal.textContent = 'Totale: € 0,00';
+                    legend.innerHTML = '<li class="empty-state">Nessun dato da mostrare.</li>';
+                    return;
+                }
+
+                var start = 0;
+                var segments = [];
+                entries.forEach(function (entry) {
+                    var pct = (entry.amount / total) * 100;
+                    var end = start + pct;
+                    var color = categoryColors[entry.cat] || '#999';
+                    segments.push(color + ' ' + start + '% ' + end + '%');
+                    entry.pct = pct;
+                    entry.color = color;
+                    start = end;
+                });
+
+                pie.style.background = 'conic-gradient(' + segments.join(', ') + ')';
+                pie.setAttribute('aria-label', 'Grafico a torta delle spese per categoria. Totale ' + formatEuro(total));
+                pieTotal.textContent = 'Totale: ' + formatEuro(total);
+
+                legend.innerHTML = entries.map(function (entry) {
+                    return '<li class="legend-item">' +
+                        '<span class="legend-swatch" style="background:' + entry.color + '"></span>' +
+                        '<span class="legend-label">' + entry.cat + '</span>' +
+                        '<span class="legend-value">' + formatEuro(entry.amount) + ' (' + entry.pct.toFixed(1).replace('.', ',') + '%)</span>' +
+                        '</li>';
+                }).join('');
+            }
+
+            function switchView(view) {
+                tabButtons.forEach(function (btn) {
+                    var active = btn.getAttribute('data-view') === view;
+                    btn.classList.toggle('is-active', active);
+                    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+                });
+                Object.keys(views).forEach(function (key) {
+                    if (!views[key]) return;
+                    views[key].hidden = key !== view;
+                });
+                if (view === 'statistiche') {
+                    renderStats();
+                }
+            }
+
+            tabButtons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    switchView(btn.getAttribute('data-view'));
+                });
+            });
+
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    var title = document.getElementById('expense-title').value.trim();
+                    var category = document.getElementById('expense-category').value;
+                    var amount = parseFloat(document.getElementById('expense-amount').value);
+                    if (!title || !category || !(amount > 0)) return;
+                    expenses.push({ id: nextId++, date: todayISO(), title: title, category: category, amount: amount });
+                    renderTable();
+                    renderStats();
+                    form.reset();
+                    if (feedback) {
+                        feedback.textContent = 'Spesa aggiunta con successo.';
+                        setTimeout(function () { feedback.textContent = ''; }, 2500);
+                    }
+                });
+            }
+
+            renderTable();
+            renderStats();
+            switchView('spese');
+        })();
+    </script>
+</body>
+
+</html>

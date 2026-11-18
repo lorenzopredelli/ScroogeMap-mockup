@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Impostazioni profilo – ScroogeMap</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&family=Mrs+Saint+Delafield&family=Italianno&display=swap"
+        rel="stylesheet">
+    <link href="CSS/style.css" rel="stylesheet">
+    <style>
+        body {
+            min-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        main {
+            flex: 1;
+        }
+
+        .settings-subnav {
+            margin-top: 28px;
+        }
+
+        .settings-form .field input,
+        .settings-form .field select,
+        .setting-control select {
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            background: var(--bg);
+            color: var(--ink);
+            font: inherit;
+            transition: .2s;
+        }
+
+        .settings-form .field input:focus,
+        .settings-form .field select:focus,
+        .setting-control select:focus {
+            outline: 2px solid transparent;
+            border-color: var(--gold);
+            box-shadow: 0 0 0 3px rgba(200, 174, 101, .2);
+        }
+
+        .settings-form .field select,
+        .setting-control select {
+            padding: 12px 14px;
+            appearance: auto;
+        }
+
+        .choice-pill {
+            border: 1px solid var(--line);
+            border-radius: 999px;
+            background: var(--surface);
+            color: var(--ink);
+            transition: .2s;
+        }
+
+        .choice-pill:hover {
+            border-color: var(--gold);
+        }
+
+        .choice-pill input {
+            accent-color: var(--gold);
+            width: 16px;
+            height: 16px;
+        }
+
+        .choice-pill:has(input:checked) {
+            border-color: var(--gold);
+            background: var(--cream);
+            box-shadow: none;
+        }
+
+        .choice-pill:focus-within {
+            box-shadow: 0 0 0 3px rgba(200, 174, 101, .2);
+        }
+
+        .switch-ui {
+            border: 1px solid var(--line);
+            background: var(--cream);
+        }
+
+        .switch input:checked+.switch-ui {
+            background: var(--gold);
+            border-color: var(--gold);
+        }
+
+        .switch-ui::after {
+            top: 50%;
+            left: 3px;
+            transform: translateY(-50%);
+            background: var(--surface);
+            border: 1px solid var(--line);
+            box-shadow: none;
+        }
+
+        .switch input:checked + .switch-ui::after {
+            transform: translate(20px, -50%);
+        }
+
+        .switch:hover .switch-ui {
+            border-color: var(--gold);
+        }
+
+        .switch input:focus-visible+.switch-ui {
+            box-shadow: 0 0 0 3px rgba(200, 174, 101, .2);
+            outline: none;
+        }
+
+        .danger-btn {
+            border-width: 2px;
+        }
+
+        .danger-btn:disabled {
+            opacity: .5;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="wrap">
+            <nav>
+                <a href="index.html" class="brand">
+                    <div class="logo-img"></div>
+                    <span class="logo"><span class="s">Scrooge</span><span class="m">Map</span></span>
+                </a>
+                <ul>
+                    <li><a href="mappa.html">Mappa</a></li>
+                    <li><a href="budgeting.html">Budgeting</a></li>
+                    <li><a href="#">Ricerca AI</a></li>
+                </ul>
+                <a class="btn" href="impostazioni.html" aria-current="page">Impostazioni profilo</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="wrap">
+            <nav class="subnav settings-subnav" aria-label="Sezioni impostazioni">
+                <button type="button" class="tab-btn is-active" data-view="account" aria-pressed="true">Account</button>
+                <button type="button" class="tab-btn" data-view="report" aria-pressed="false">Report AI</button>
+                <button type="button" class="tab-btn" data-view="ux" aria-pressed="false">Esperienza</button>
+            </nav>
+
+            <section id="view-account" class="settings-view">
+                <div class="budget-intro">
+                    <h2 class="section-title">Account</h2>
+                    <p class="lead">Gestisci i tuoi dati personali, la password, l'esportazione dei dati e l'eliminazione dell'account.</p>
+                </div>
+
+                <section class="budget-section card" aria-labelledby="personal-data-title">
+                    <h2 id="personal-data-title">Dati personali</h2>
+                    <form id="personal-form" class="settings-form" action="#" method="post">
+                        <div class="settings-grid">
+                            <div class="field">
+                                <label for="profile-name">Nome e cognome</label>
+                                <input type="text" id="profile-name" name="name" value="Mario Rossi"
+                                    autocomplete="name">
+                            </div>
+                            <div class="field">
+                                <label for="profile-email">Email</label>
+                                <input type="email" id="profile-email" name="email" value="mario.rossi@example.com"
+                                    autocomplete="email">
+                            </div>
+                            <div class="field">
+                                <label for="profile-city">Città</label>
+                                <input type="text" id="profile-city" name="city" value="Trento"
+                                    autocomplete="address-level2">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn">Salva dati personali</button>
+                            <p class="form-feedback" id="personal-feedback" aria-live="polite"></p>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="budget-section card" aria-labelledby="password-title">
+                    <h2 id="password-title">Password</h2>
+                    <form id="password-form" class="settings-form" action="#" method="post">
+                        <div class="settings-grid settings-grid--single">
+                            <div class="field">
+                                <label for="current-password">Password attuale</label>
+                                <input type="password" id="current-password" name="current-password"
+                                    autocomplete="current-password">
+                            </div>
+                            <div class="field">
+                                <label for="new-password">Nuova password</label>
+                                <input type="password" id="new-password" name="new-password"
+                                    autocomplete="new-password">
+                            </div>
+                            <div class="field">
+                                <label for="confirm-password">Conferma nuova password</label>
+                                <input type="password" id="confirm-password" name="confirm-password"
+                                    autocomplete="new-password">
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn">Aggiorna password</button>
+                            <p class="form-feedback" id="password-feedback" aria-live="polite"></p>
+                        </div>
+                    </form>
+                </section>
+
+                <section class="budget-section card" aria-labelledby="data-title">
+                    <h2 id="data-title">I tuoi dati</h2>
+                    <p class="settings-text">Puoi esportare una copia dei tuoi dati personali in formato JSON (mockup).
+                    </p>
+                    <div class="form-actions">
+                        <button type="button" class="btn ghost" id="export-data">Esporta dati personali (JSON)</button>
+                        <p class="form-feedback" id="export-feedback" aria-live="polite"></p>
+                    </div>
+                </section>
+
+                <section class="budget-section card danger-card" aria-labelledby="delete-title">
+                    <h2 id="delete-title">Elimina account</h2>
+                    <p class="settings-text"><strong>Attenzione:</strong> questa azione è <strong>irreversibile</strong>. Verranno rimossi il profilo e tutti i dati associati (mockup, nessuna operazione reale).</p>
+                    <form id="delete-form" class="settings-form" action="#" method="post">
+                        <div class="field">
+                            <label for="delete-confirm">Per confermare, digita <strong>DELETE</strong></label>
+                            <input type="text" id="delete-confirm" name="delete-confirm" placeholder="DELETE" autocomplete="off">
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn danger-btn" id="delete-account" disabled>Elimina account</button>
+                            <p class="form-feedback danger-feedback" id="delete-feedback" aria-live="polite"></p>
+                        </div>
+                    </form>
+                </section>
+            </section>
+
+            <section id="view-report" class="settings-view" hidden>
+                <div class="budget-intro">
+                    <h2 class="section-title">Report AI</h2>
+                    <p class="lead">Configura la generazione dei report automatici sulle tue spese.</p>
+                </div>
+
+                <section class="budget-section card" aria-labelledby="report-settings-title">
+                    <h2 id="report-settings-title">Preferenze report</h2>
+                    <form id="report-form" class="settings-form" action="#" method="post">
+                        <div class="setting-row">
+                            <div>
+                                <p class="setting-title">Report AI</p>
+                                <p class="setting-desc">Attiva o disattiva la generazione dei report periodici.</p>
+                            </div>
+                            <label class="switch" for="report-enabled">
+                                <input type="checkbox" id="report-enabled" name="report-enabled" checked>
+                                <span class="switch-ui" aria-hidden="true"></span>
+                                <span class="switch-label" id="report-enabled-label">Attivato</span>
+                            </label>
+                        </div>
+                        <div class="setting-row">
+                            <div>
+                                <p class="setting-title" id="cadence-label">Cadenza</p>
+                                <p class="setting-desc">Scegli ogni quanto ricevere il resoconto.</p>
+                            </div>
+                            <div class="choice-group" role="radiogroup" aria-labelledby="cadence-label">
+                                <label class="choice-pill">
+                                    <input type="radio" name="cadence" value="settimanale">
+                                    <span>Settimanale</span>
+                                </label>
+                                <label class="choice-pill">
+                                    <input type="radio" name="cadence" value="mensile" checked>
+                                    <span>Mensile</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn">Salva preferenze report</button>
+                            <p class="form-feedback" id="report-feedback" aria-live="polite"></p>
+                        </div>
+                    </form>
+                </section>
+            </section>
+
+            <section id="view-ux" class="settings-view" hidden>
+                <div class="budget-intro">
+                    <h2 class="section-title">Esperienza</h2>
+                    <p class="lead">Personalizza tema, lingua e dimensione del testo.</p>
+                </div>
+
+                <section class="budget-section card" aria-labelledby="ux-settings-title">
+                    <h2 id="ux-settings-title">Preferenze interfaccia</h2>
+                    <form id="ux-form" class="settings-form" action="#" method="post">
+                        <div class="setting-row">
+                            <div>
+                                <p class="setting-title">Tema</p>
+                                <p class="setting-desc">Seleziona la modalità di visualizzazione.</p>
+                            </div>
+                            <div class="choice-group" role="radiogroup" aria-label="Tema">
+                                <label class="choice-pill">
+                                    <input type="radio" name="theme" value="light" checked>
+                                    <span>Light mode</span>
+                                </label>
+                                <label class="choice-pill">
+                                    <input type="radio" name="theme" value="dark">
+                                    <span>Dark mode</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="setting-row">
+                            <div>
+                                <label class="setting-title" for="language">Lingua</label>
+                                <p class="setting-desc">Imposta la lingua dell'interfaccia (mockup).</p>
+                            </div>
+                            <div class="field setting-control">
+                                <select id="language" name="language">
+                                    <option value="it" selected>Italiano</option>
+                                    <option value="de">Tedesco</option>
+                                    <option value="en">Inglese</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="setting-row">
+                            <div>
+                                <p class="setting-title">Grandezza font</p>
+                                <p class="setting-desc">Regola la dimensione del testo.</p>
+                            </div>
+                            <div class="choice-group" role="radiogroup" aria-label="Grandezza font">
+                                <label class="choice-pill">
+                                    <input type="radio" name="font-size" value="small">
+                                    <span>Piccolo</span>
+                                </label>
+                                <label class="choice-pill">
+                                    <input type="radio" name="font-size" value="medium" checked>
+                                    <span>Medio</span>
+                                </label>
+                                <label class="choice-pill">
+                                    <input type="radio" name="font-size" value="large">
+                                    <span>Grande</span>
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-actions">
+                            <button type="submit" class="btn">Salva preferenze</button>
+                            <p class="form-feedback" id="ux-feedback" aria-live="polite"></p>
+                        </div>
+                    </form>
+                </section>
+            </section>
+        </div>
+    </main>
+
+    <footer class="settigns-footer">
+        <div class="wrap">
+            <span>© 2026 ScroogeMap · Ingegneria del Software 2026/2027</span>
+            <span>Lorenzo Predelli – Samuel Tardiota – Matteo Dallaserra</span>
+        </div>
+    </footer>
+
+    <script>
+        (function () {
+            var tabButtons = Array.prototype.slice.call(document.querySelectorAll('.tab-btn'));
+            var views = {
+                account: document.getElementById('view-account'),
+                report: document.getElementById('view-report'),
+                ux: document.getElementById('view-ux')
+            };
+
+            function switchView(view) {
+                tabButtons.forEach(function (btn) {
+                    var active = btn.getAttribute('data-view') === view;
+                    btn.classList.toggle('is-active', active);
+                    btn.setAttribute('aria-pressed', active ? 'true' : 'false');
+                });
+                Object.keys(views).forEach(function (key) {
+                    if (views[key]) views[key].hidden = key !== view;
+                });
+            }
+
+            tabButtons.forEach(function (btn) {
+                btn.addEventListener('click', function () { switchView(btn.getAttribute('data-view')); });
+            });
+
+            function showFeedback(id, msg) {
+                var el = document.getElementById(id);
+                if (!el) return;
+                el.textContent = msg;
+                setTimeout(function () { if (el.textContent === msg) el.textContent = ''; }, 3000);
+            }
+
+            var personalForm = document.getElementById('personal-form');
+            if (personalForm) {
+                personalForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    showFeedback('personal-feedback', 'Dati personali salvati (mockup).');
+                });
+            }
+
+            var passwordForm = document.getElementById('password-form');
+            if (passwordForm) {
+                passwordForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    var p1 = document.getElementById('new-password').value;
+                    var p2 = document.getElementById('confirm-password').value;
+                    if (p1 && p1 !== p2) {
+                        showFeedback('password-feedback', 'Le nuove password non coincidono.');
+                        return;
+                    }
+                    showFeedback('password-feedback', 'Password aggiornata (mockup).');
+                    passwordForm.reset();
+                });
+            }
+
+            var exportBtn = document.getElementById('export-data');
+            if (exportBtn) {
+                exportBtn.addEventListener('click', function () {
+                    var data = {
+                        profilo: {
+                            nome: document.getElementById('profile-name').value,
+                            email: document.getElementById('profile-email').value,
+                            citta: document.getElementById('profile-city').value
+                        },
+                        preferenze: {
+                            reportAI: document.getElementById('report-enabled').checked,
+                            cadenza: (document.querySelector('input[name="cadence"]:checked') || {}).value,
+                            tema: (document.querySelector('input[name="theme"]:checked') || {}).value,
+                            lingua: document.getElementById('language').value,
+                            font: (document.querySelector('input[name="font-size"]:checked') || {}).value
+                        },
+                        esportatoIl: new Date().toISOString()
+                    };
+                    var blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                    var url = URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'scroogemap-dati-personali.json';
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                    showFeedback('export-feedback', 'Esportazione JSON completata.');
+                });
+            }
+
+            var deleteForm = document.getElementById('delete-form');
+            var deleteInput = document.getElementById('delete-confirm');
+            var deleteBtn = document.getElementById('delete-account');
+            if (deleteInput && deleteBtn) {
+                deleteInput.addEventListener('input', function () {
+                    deleteBtn.disabled = deleteInput.value !== 'DELETE';
+                });
+            }
+            if (deleteForm) {
+                deleteForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    if (!deleteInput || deleteInput.value !== 'DELETE') {
+                        showFeedback('delete-feedback', 'Digita DELETE per confermare l\'eliminazione.');
+                        return;
+                    }
+                    deleteBtn.disabled = true;
+                    deleteInput.disabled = true;
+                    showFeedback('delete-feedback', 'Account eliminato (mockup, nessuna azione reale).');
+                });
+            }
+
+            var reportEnabled = document.getElementById('report-enabled');
+            var reportEnabledLabel = document.getElementById('report-enabled-label');
+            function syncReportLabel() {
+                if (reportEnabledLabel && reportEnabled) {
+                    reportEnabledLabel.textContent = reportEnabled.checked ? 'Attivato' : 'Disattivato';
+                }
+            }
+            if (reportEnabled) {
+                reportEnabled.addEventListener('change', syncReportLabel);
+                syncReportLabel();
+            }
+
+            var reportForm = document.getElementById('report-form');
+            if (reportForm) {
+                reportForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    showFeedback('report-feedback', 'Preferenze report salvate (mockup).');
+                });
+            }
+
+            function applyTheme(theme) {
+                if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+                else document.documentElement.setAttribute('data-theme', 'light');
+            }
+
+            function applyFontSize(size) {
+                document.documentElement.classList.remove('font-small', 'font-medium', 'font-large');
+                document.documentElement.classList.add('font-' + size);
+            }
+
+            Array.prototype.forEach.call(document.querySelectorAll('input[name="theme"]'), function (r) {
+                r.addEventListener('change', function () { applyTheme(r.value); });
+            });
+            Array.prototype.forEach.call(document.querySelectorAll('input[name="font-size"]'), function (r) {
+                r.addEventListener('change', function () { applyFontSize(r.value); });
+            });
+
+            var uxForm = document.getElementById('ux-form');
+            if (uxForm) {
+                uxForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    showFeedback('ux-feedback', 'Preferenze interfaccia salvate (mockup).');
+                });
+            }
+
+            applyTheme('light');
+            applyFontSize('medium');
+            switchView('account');
+        })();
+    </script>
+</body>
+
+</html>

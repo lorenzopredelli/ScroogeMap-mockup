@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Mappa e confronto prezzi – ScroogeMap</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&family=Mrs+Saint+Delafield&family=Italianno&display=swap"
+        rel="stylesheet">
+    <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+    <link href="CSS/style.css" rel="stylesheet">
+</head>
+
+<body class="map-page">
+    <header class="map-header">
+        <div class="wrap">
+            <nav>
+                <a href="index.html" class="brand">
+                    <div class="logo-img"></div>
+                    <span class="logo"><span class="s">Scrooge</span><span class="m">Map</span></span>
+                </a>
+                <ul>
+                    <li><a href="mappa.html">Mappa</a></li>
+                    <li><a href="budgeting.html">Budgeting</a></li>
+                    <li><a href="#">Ricerca AI</a></li>
+                </ul>
+                <a class="btn" href="impostazioni.html">Impostazioni profilo</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="map-main">
+        <div id="map" aria-label="Mappa di Trento"></div>
+
+        <div class="map-overlay search-overlay" aria-label="Cerca nodi">
+            <form id="search-form" class="search-form" role="search">
+                <label for="search-input" class="visually-hidden">Cerca nodi</label>
+                <input id="search-input" class="search-overlay-input" type="search" placeholder="Cerca nodi..."
+                    autocomplete="off">
+                <button type="submit" class="btn search-submit">Cerca</button>
+                <button type="button" class="btn ghost filters-toggle" id="filters-toggle" aria-expanded="false"
+                    aria-controls="filters-dropdown">Filtri</button>
+            </form>
+            <div id="filters-dropdown" class="filters-dropdown" hidden>
+                <div class="filters-dropdown-section">
+                    <p class="filters-label">Categoria</p>
+                    <div class="filter-group" role="group" aria-label="Filtra per categoria">
+                        <button type="button" class="filter-btn is-active" data-filter="tutte"
+                            aria-pressed="true">Tutte</button>
+                        <button type="button" class="filter-btn" data-filter="alimentari"
+                            aria-pressed="false">Alimentari</button>
+                        <button type="button" class="filter-btn" data-filter="carburanti"
+                            aria-pressed="false">Carburanti</button>
+                        <button type="button" class="filter-btn" data-filter="parcheggi"
+                            aria-pressed="false">Parcheggi</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <button type="button" class="nodes-toggle" id="nodes-toggle" aria-expanded="false" aria-controls="nodes-panel"
+            title="Nodi disponibili">
+            <span class="nodes-toggle-text">Nodi</span>
+            <span class="nodes-toggle-count" id="nodes-toggle-count">0</span>
+        </button>
+
+        <aside id="nodes-panel" class="nodes-panel" aria-label="Nodi disponibili">
+            <div class="nodes-panel-inner card">
+                <div class="nodes-panel-header">
+                    <h2>Nodi disponibili</h2>
+                    <button type="button" class="panel-close" id="nodes-close" aria-label="Chiudi pannello">✕</button>
+                </div>
+                <div class="nodes-list-view" id="nodes-list-view">
+                    <div class="nodes-sort">
+                        <label for="sort-nodes" class="filters-label">Ordina per</label>
+                        <select id="sort-nodes" class="sort-select">
+                            <option value="distanza" selected>Distanza</option>
+                            <option value="prezzo">Prezzo</option>
+                        </select>
+                    </div>
+                    <p class="nodes-count lead" id="nodes-count"></p>
+                    <div class="nodes-list" id="nodes-list" aria-label="Lista nodi disponibili"></div>
+                </div>
+                <div class="node-detail-view" id="node-detail-view" hidden>
+                    <button type="button" class="back-to-list btn ghost" id="back-to-list">← Torna alla lista</button>
+                    <div id="node-details-content" class="node-details-content" aria-live="polite"></div>
+                </div>
+            </div>
+        </aside>
+
+        <div id="map-status" class="map-status" aria-live="polite"></div>
+    </main>
+
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js"></script>
+    <script type="module">
+        import { layers, namedFlavor } from 'https://esm.sh/@protomaps/basemaps@5.7.0';
+        window.protomapsBasemaps = { layers: layers, namedFlavor: namedFlavor };
+        window.dispatchEvent(new Event('basemaps-ready'));
+    </script>
+    <script>
+        (function () {
+            var nodes = [
+                { id: 'n1', name: 'Famiglia Cooperativa - Via Brennero', address: 'Via Brennero 120, Trento', price: 2.35, priceLabel: '€ 2,35 (spesa media)', distanceKm: 0.4, categories: ['alimentari'], openStatus: 'Aperto ora', openInfo: 'Chiude alle 20:00', reports: ['Prezzi aggiornati oggi da 3 utenti', 'Segnalata buona disponibilità di prodotti freschi'], details: ['Orari: Lun–Sab 8:00–20:00, Dom 9:00–13:00', 'Ultimo aggiornamento prezzi: oggi, 09:20', 'Servizi: parcheggio clienti, prodotti locali'], lng: 11.1135, lat: 46.0905 },
+                { id: 'n2', name: 'IP - Via del Brennero', address: 'Via del Brennero 65, Trento', price: 1.789, priceLabel: '€ 1,789 /L (benzina)', distanceKm: 0.8, categories: ['carburanti'], openStatus: 'Aperto ora', openInfo: 'Self service H24, cassa fino alle 19:30', reports: ['1 segnalazione: prezzo più basso della zona', 'Coda breve segnalata 2 ore fa'], details: ['Carburanti: benzina, diesel, GPL', 'Ultimo aggiornamento prezzi: ieri, 18:05', 'Servizi: autolavaggio, gonfiaggio pneumatici'], lng: 11.1120, lat: 46.0820 },
+                { id: 'n3', name: 'Parcheggio Area ex Zuffo', address: 'Piazza di Centa, Trento', price: 1.5, priceLabel: '€ 1,50 /h', distanceKm: 1.1, categories: ['parcheggi'], openStatus: 'Aperto', openInfo: 'Disponibilità media in questo momento', reports: ['2 segnalazioni: spesso pieno in fascia 18:00–20:00'], details: ['Orari: 7:00–22:00', 'Ultimo aggiornamento: oggi, 11:40', 'Note: pagamento con app o cassa automatica, posti coperti limitati'], lng: 11.1248, lat: 46.0758 },
+                { id: 'n4', name: 'Conad City - Via Roma', address: 'Via Roma 55, Trento', price: 2.1, priceLabel: '€ 2,10 (spesa media)', distanceKm: 0.6, categories: ['alimentari'], openStatus: 'Aperto ora', openInfo: 'Chiude alle 19:30', reports: ['Prezzi confermati da 5 utenti questa settimana'], details: ['Orari: Lun–Sab 8:30–19:30', 'Ultimo aggiornamento prezzi: oggi, 08:10', 'Servizi: consegna a domicilio, prodotti bio'], lng: 11.1210, lat: 46.0697 },
+                { id: 'n5', name: 'Parcheggio Autosilo Buonconsiglio', address: 'Via F. Petrarca, Trento', price: 1.2, priceLabel: '€ 1,20 /h', distanceKm: 1.4, categories: ['parcheggi'], openStatus: 'Aperto', openInfo: 'Molti posti liberi', reports: ['Nessuna segnalazione recente'], details: ['Orari: H24', 'Ultimo aggiornamento: oggi, 10:05', 'Servizi: colonnine ricarica EV, accessibile, videosorveglianza'], lng: 11.1275, lat: 46.0719 },
+                { id: 'n6', name: 'Q8 - Via dei Mille', address: 'Via dei Mille 18, Trento', price: 1.815, priceLabel: '€ 1,815 /L (benzina)', distanceKm: 1.9, categories: ['carburanti', 'alimentari'], openStatus: 'Aperto ora', openInfo: 'Shop aperto fino alle 21:00', reports: ['3 segnalazioni: shop fornito per snack e bevande'], details: ['Carburanti: benzina, diesel', 'Ultimo aggiornamento prezzi: oggi, 07:50', 'Servizi: bar/shop, WC, aria e acqua'], lng: 11.1298, lat: 46.0615 }
+            ];
+
+            var state = { query: '', pendingQuery: '', category: 'tutte', sort: 'distanza', selectedId: null, view: 'list', panelOpen: false, filtersOpen: false };
+            var markersById = {};
+            var map = null;
+
+            var searchForm = document.getElementById('search-form');
+            var searchInput = document.getElementById('search-input');
+            var sortSelect = document.getElementById('sort-nodes');
+            var listEl = document.getElementById('nodes-list');
+            var countEl = document.getElementById('nodes-count');
+            var listView = document.getElementById('nodes-list-view');
+            var detailView = document.getElementById('node-detail-view');
+            var detailsContent = document.getElementById('node-details-content');
+            var backBtn = document.getElementById('back-to-list');
+            var filterButtons = Array.prototype.slice.call(document.querySelectorAll('.filter-btn'));
+            var filtersToggle = document.getElementById('filters-toggle');
+            var filtersDropdown = document.getElementById('filters-dropdown');
+            var nodesToggle = document.getElementById('nodes-toggle');
+            var nodesPanel = document.getElementById('nodes-panel');
+            var nodesClose = document.getElementById('nodes-close');
+            var nodesToggleCount = document.getElementById('nodes-toggle-count');
+            var mapStatus = document.getElementById('map-status');
+
+            function formatDistance(km) { return km.toFixed(1).replace('.', ',') + ' km'; }
+            function tagLabel(cat) { return cat === 'alimentari' ? 'Alimentari' : cat === 'carburanti' ? 'Carburanti' : cat === 'parcheggi' ? 'Parcheggi' : cat; }
+
+            function getFiltered() {
+                var q = state.query.trim().toLowerCase();
+                var filtered = nodes.filter(function (n) {
+                    var matchCat = state.category === 'tutte' || n.categories.indexOf(state.category) !== -1;
+                    var matchQ = !q || n.name.toLowerCase().indexOf(q) !== -1 || n.address.toLowerCase().indexOf(q) !== -1;
+                    return matchCat && matchQ;
+                });
+                filtered.sort(function (a, b) { return state.sort === 'prezzo' ? a.price - b.price : a.distanceKm - b.distanceKm; });
+                return filtered;
+            }
+
+            function setPanelOpen(open) {
+                state.panelOpen = !!open;
+                nodesPanel.classList.toggle('is-open', state.panelOpen);
+                nodesPanel.setAttribute('aria-hidden', state.panelOpen ? 'false' : 'true');
+                nodesToggle.setAttribute('aria-expanded', state.panelOpen ? 'true' : 'false');
+            }
+
+            function setFiltersOpen(open) {
+                state.filtersOpen = !!open;
+                filtersDropdown.hidden = !state.filtersOpen;
+                filtersToggle.setAttribute('aria-expanded', state.filtersOpen ? 'true' : 'false');
+            }
+
+            function showListView() {
+                state.view = 'list';
+                state.selectedId = null;
+                listView.hidden = false;
+                detailView.hidden = true;
+                updateMarkerSelection();
+                renderList();
+            }
+
+            function renderDetails(node) {
+                if (!node) { detailsContent.innerHTML = ''; return; }
+                var tags = node.categories.map(function (c) { return '<span class="tag tag--' + c + '">' + tagLabel(c) + '</span>'; }).join('');
+                var reports = (node.reports || []).map(function (r) { return '<li>' + r + '</li>'; }).join('');
+                var extra = (node.details || []).map(function (d) { return '<li>' + d + '</li>'; }).join('');
+                detailsContent.innerHTML =
+                    '<div class="details-header"><h3>' + node.name + '</h3><p class="node-address">' + node.address + '</p>' +
+                    '<div class="details-meta"><span class="price">' + node.priceLabel + '</span><span class="distance">' + formatDistance(node.distanceKm) + '</span></div>' +
+                    '<div class="tags">' + tags + '</div></div>' +
+                    '<div class="details-block"><h4>Stato</h4><p class="status-open">' + node.openStatus + '</p><p>' + node.openInfo + '</p></div>' +
+                    '<div class="details-block"><h4>Segnalazioni utenti</h4>' + (reports ? '<ul>' + reports + '</ul>' : '<p>Nessuna segnalazione al momento.</p>') + '</div>' +
+                    '<div class="details-block"><h4>Altri dettagli</h4>' + (extra ? '<ul>' + extra + '</ul>' : '<p>—</p>') + '</div>';
+            }
+
+            function selectNode(id, opts) {
+                opts = opts || {};
+                var node = nodes.filter(function (n) { return n.id === id; })[0];
+                if (!node) return;
+                if (opts.openPanel) setPanelOpen(true);
+                state.view = 'detail';
+                state.selectedId = id;
+                listView.hidden = true;
+                detailView.hidden = false;
+                renderDetails(node);
+                updateMarkerSelection();
+                renderList();
+                if (opts.source === 'list' && map && typeof node.lng === 'number') {
+                    try { map.easeTo({ center: [node.lng, node.lat], zoom: Math.max(map.getZoom(), 14), duration: 500 }); } catch (e) { }
+                }
+            }
+
+            function updateMarkerSelection() {
+                Object.keys(markersById).forEach(function (id) {
+                    var m = markersById[id];
+                    if (m && m.getElement) {
+                        m.getElement().classList.toggle('is-selected', id === state.selectedId);
+                    }
+                });
+            }
+
+            function updateMarkers(filtered) {
+                var visible = {};
+                filtered.forEach(function (n) { visible[n.id] = true; });
+                Object.keys(markersById).forEach(function (id) {
+                    var m = markersById[id];
+                    var el = m && m.getElement && m.getElement();
+                    if (!el) return;
+                    el.style.display = visible[id] ? '' : 'none';
+                });
+            }
+
+            function renderList() {
+                var filtered = getFiltered();
+                countEl.textContent = filtered.length + (filtered.length === 1 ? ' nodo trovato' : ' nodi trovati');
+                nodesToggleCount.textContent = String(filtered.length);
+                if (state.view === 'detail' && state.selectedId) {
+                    var stillVisible = filtered.some(function (n) { return n.id === state.selectedId; });
+                    if (!stillVisible) { showListView(); updateMarkers(filtered); return; }
+                }
+                updateMarkers(filtered);
+                if (!filtered.length) {
+                    listEl.innerHTML = '<p class="empty-state">Nessun nodo corrisponde ai filtri selezionati.</p>';
+                    return;
+                }
+                listEl.innerHTML = filtered.map(function (node) {
+                    var selected = node.id === state.selectedId ? ' is-selected' : '';
+                    var pressed = node.id === state.selectedId ? 'true' : 'false';
+                    var tags = node.categories.map(function (c) { return '<span class="tag tag--' + c + '">' + tagLabel(c) + '</span>'; }).join('');
+                    return '<button type="button" class="node-card' + selected + '" data-node-id="' + node.id + '" aria-pressed="' + pressed + '">' +
+                        '<div class="node-card-main"><h3>' + node.name + '</h3><p class="node-address">' + node.address + '</p>' +
+                        '<div class="node-meta"><span class="price">' + node.priceLabel + '</span><span class="distance">' + formatDistance(node.distanceKm) + '</span></div>' +
+                        '<div class="tags">' + tags + '</div></div></button>';
+                }).join('');
+                Array.prototype.forEach.call(listEl.querySelectorAll('.node-card'), function (btn) {
+                    btn.addEventListener('click', function () {
+                        var id = btn.getAttribute('data-node-id');
+                        selectNode(id, { openPanel: true, source: 'list' });
+                    });
+                });
+            }
+
+            function categoryClass(categories) {
+                if (categories.indexOf('alimentari') !== -1) return 'map-pin--alimentari';
+                if (categories.indexOf('carburanti') !== -1) return 'map-pin--carburanti';
+                if (categories.indexOf('parcheggi') !== -1) return 'map-pin--parcheggi';
+                return '';
+            }
+
+            function createMarkers() {
+                nodes.forEach(function (node) {
+                    if (typeof node.lng !== 'number' || typeof node.lat !== 'number') return;
+                    var el = document.createElement('button');
+                    el.type = 'button';
+                    el.className = 'map-pin ' + categoryClass(node.categories);
+                    el.setAttribute('aria-label', node.name);
+                    el.title = node.name;
+                    el.addEventListener('click', function (e) {
+                        e.stopPropagation();
+                        selectNode(node.id, { openPanel: true, source: 'map' });
+                    });
+                    var marker = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([node.lng, node.lat]).addTo(map);
+                    markersById[node.id] = marker;
+                });
+                updateMarkerSelection();
+                updateMarkers(getFiltered());
+            }
+
+            function buildStyle() {
+                return {
+                    version: 8,
+                    glyphs: 'https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf',
+                    sprite: 'https://protomaps.github.io/basemaps-assets/sprites/v4/light',
+                    sources: {
+                        trento: {
+                            type: 'vector',
+                            url: 'pmtiles://assets/trento.pmtiles',
+                            attribution: '© OpenStreetMap'
+                        }
+                    },
+                    layers: protomapsBasemaps.layers('trento', protomapsBasemaps.namedFlavor('light'), { lang: 'it' })
+                };
+            }
+
+            function initMap() {
+                var protocol = new pmtiles.Protocol();
+                maplibregl.addProtocol('pmtiles', protocol.tile);
+                map = new maplibregl.Map({ container: 'map', style: buildStyle(), center: [11.1217, 46.0679], zoom: 13, maxZoom: 15 });
+                map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-left');
+                map.on('load', function () { createMarkers(); renderList(); mapStatus.textContent = ''; });
+                map.on('error', function () {
+                    mapStatus.textContent = 'Impossibile caricare alcuni dati della mappa.';
+                });
+            }
+
+            if (searchForm) {
+                searchForm.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    state.query = searchInput.value;
+                    renderList();
+                });
+            }
+
+            filterButtons.forEach(function (btn) {
+                btn.addEventListener('click', function () {
+                    state.category = btn.getAttribute('data-filter');
+                    filterButtons.forEach(function (b) {
+                        var active = b === btn;
+                        b.classList.toggle('is-active', active);
+                        b.setAttribute('aria-pressed', active ? 'true' : 'false');
+                    });
+                    renderList();
+                });
+            });
+
+            if (sortSelect) {
+                sortSelect.addEventListener('change', function () { state.sort = sortSelect.value; renderList(); });
+            }
+
+            if (filtersToggle) {
+                filtersToggle.addEventListener('click', function (e) {
+                    e.stopPropagation();
+                    setFiltersOpen(!state.filtersOpen);
+                });
+            }
+
+            document.addEventListener('click', function (e) {
+                if (state.filtersOpen && filtersDropdown && !filtersDropdown.contains(e.target) && e.target !== filtersToggle) {
+                    setFiltersOpen(false);
+                }
+            });
+
+            document.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') {
+                    if (state.filtersOpen) setFiltersOpen(false);
+                    else if (state.panelOpen) setPanelOpen(false);
+                }
+            });
+
+            if (nodesToggle) {
+                nodesToggle.addEventListener('click', function () { setPanelOpen(!state.panelOpen); });
+            }
+            if (nodesClose) {
+                nodesClose.addEventListener('click', function () { setPanelOpen(false); });
+            }
+            if (backBtn) {
+                backBtn.addEventListener('click', function () { showListView(); });
+            }
+
+            nodesToggleCount.textContent = String(nodes.length);
+            renderList();
+            if (window.protomapsBasemaps) initMap();
+            else window.addEventListener('basemaps-ready', initMap);
+        })();
+    </script>
+</body>
+
+</html>
