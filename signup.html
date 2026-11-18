@@ -9,6 +9,7 @@
         href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&family=Mrs+Saint+Delafield&family=Italianno&display=swap"
         rel="stylesheet">
     <link href="CSS/style.css" rel="stylesheet">
+    <link rel="icon" type="image/png" href="assets/logo.png">
 </head>
 
 <body>
@@ -147,6 +148,11 @@
                 button.setAttribute('aria-pressed', show ? 'true' : 'false');
                 button.setAttribute('aria-label', show ? 'Nascondi password' : 'Mostra password');
             });
+        });
+
+        document.querySelector('.auth-form').addEventListener('submit', function (e) {
+            e.preventDefault();
+            window.location.href = 'mappa.html';
         });
     </script>
 </body>
