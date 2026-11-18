@@ -1857,3 +1857,152 @@ body.map-page #map {
 .settigns-footer {
     margin-top: 24px;
 }
+
+/* Ricerca AI page */
+body.ai-page {
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column
+}
+
+body.ai-page main {
+    flex: 1
+}
+
+.ai-search-intro {
+    padding: 28px 0 8px
+}
+
+.ai-search-intro h1 {
+    font-size: clamp(1.9rem, 4vw, 2.6rem);
+    font-weight: 600;
+    margin-bottom: 8px
+}
+
+.ai-search-intro .lead {
+    margin-bottom: 0
+}
+
+.ai-search-form {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 14px;
+    align-items: end
+}
+
+.ai-search-actions {
+    margin-top: 0
+}
+
+.ai-results-subnav {
+    width: min(100%, 320px);
+    margin: 16px 0 0
+}
+
+.results-toolbar {
+    margin-top: 8px;
+    padding: 24px 0;
+}
+
+.results-section {
+    margin-top: 16px;
+    min-height: 120px
+}
+
+.results-state {
+    padding: 12px 4px
+}
+
+.results-placeholder {
+    color: var(--muted);
+    text-align: center;
+    padding: 20px 8px
+}
+
+.loading-box {
+    display: grid;
+    justify-items: center;
+    gap: 8px;
+    padding: 24px 8px;
+    text-align: center
+}
+
+.spinner {
+    width: 36px;
+    height: 36px;
+    border: 3px solid var(--line);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 1s linear infinite
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg)
+    }
+}
+
+.loading-title {
+    font-weight: 600;
+    color: var(--ink)
+}
+
+.loading-sub {
+    color: var(--muted);
+    font-size: .95rem
+}
+
+.results-content[hidden],
+.results-panel[hidden] {
+    display: none
+}
+
+.results-map-layout {
+    display: grid;
+    gap: 16px
+}
+
+.results-map-widget {
+    padding: 0;
+    overflow: hidden
+}
+
+#ai-results-map {
+    width: 100%;
+    height: 420px
+}
+
+.map-detail-card {
+    padding: 20px
+}
+
+.map-detail-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--line)
+}
+
+.map-detail-header h3 {
+    margin: 0;
+    font-size: 1.1rem
+}
+
+.map-hint {
+    color: var(--muted);
+    font-size: .93rem;
+    text-align: center
+}
+
+@media(max-width:820px) {
+    .ai-search-form {
+        grid-template-columns: 1fr
+    }
+
+    #ai-results-map {
+        height: 320px
+    }
+}

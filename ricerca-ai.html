@@ -1,0 +1,414 @@
+<!DOCTYPE html>
+<html lang="it">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>Ricerca AI – ScroogeMap</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Lexend:wght@300;400;600;700&family=Mrs+Saint+Delafield&family=Italianno&display=swap"
+        rel="stylesheet">
+    <link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+    <link href="CSS/style.css" rel="stylesheet">
+</head>
+
+<body class="ai-page">
+    <header>
+        <div class="wrap">
+            <nav>
+                <a href="index.html" class="brand">
+                    <div class="logo-img"></div>
+                    <span class="logo"><span class="s">Scrooge</span><span class="m">Map</span></span>
+                </a>
+                <ul>
+                    <li><a href="mappa.html">Mappa</a></li>
+                    <li><a href="budgeting.html">Budgeting</a></li>
+                    <li><a href="ricerca-ai.html" aria-current="page">Ricerca AI</a></li>
+                </ul>
+                <a class="btn" href="impostazioni.html">Impostazioni profilo</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <div class="wrap">
+            <section class="ai-search-intro">
+                <h1>Ricerca AI</h1>
+                <p class="lead">Inserisci un prodotto e confronta i prezzi disponibili a Trento in pochi secondi.</p>
+            </section>
+
+            <section class="budget-section card ai-search-card" aria-labelledby="search-product-title">
+                <h2 id="search-product-title">Cerca un prodotto</h2>
+                <form id="ai-search-form" class="ai-search-form" role="search" action="#" method="post">
+                    <div class="field ai-search-field">
+                        <label for="product-query">Nome del prodotto</label>
+                        <input type="search" id="product-query" name="product" required
+                            placeholder="Es. latte, benzina, parcheggio..." autocomplete="off">
+                    </div>
+                    <div class="form-actions ai-search-actions">
+                        <button type="submit" class="btn" id="search-submit">Cerca prezzi</button>
+                    </div>
+                </form>
+            </section>
+
+            <section class="results-toolbar" aria-label="Vista risultati">
+                <nav class="subnav ai-results-subnav" aria-label="Seleziona vista risultati">
+                    <button type="button" class="tab-btn is-active" data-results-view="list" aria-pressed="true">Lista</button>
+                    <button type="button" class="tab-btn" data-results-view="map" aria-pressed="false">Mappa</button>
+                </nav>
+            </section>
+
+            <section class="budget-section card results-section" id="results-section" aria-live="polite">
+                <div id="results-idle" class="results-state">
+                    <p class="results-placeholder">Inserisci un prodotto per avviare la ricerca e confrontare i prezzi a Trento.</p>
+                </div>
+
+                <div id="results-loading" class="results-state" hidden>
+                    <div class="loading-box">
+                        <div class="spinner" aria-hidden="true"></div>
+                        <p class="loading-title">Ricerca in corso…</p>
+                        <p class="loading-sub">Confronto dei prezzi a Trento per "<span id="loading-query"></span>"</p>
+                    </div>
+                </div>
+
+                <div id="results-empty" class="results-state" hidden>
+                    <p class="results-placeholder" id="empty-message">Nessun risultato trovato.</p>
+                </div>
+
+                <div id="results-content" class="results-content" hidden>
+                    <div id="results-list-view" class="results-panel">
+                        <div class="nodes-list-view" id="list-view-inner">
+                            <p class="nodes-count lead" id="results-count"></p>
+                            <div class="nodes-list" id="results-list" aria-label="Lista risultati"></div>
+                        </div>
+                        <div class="node-detail-view" id="list-detail-view" hidden>
+                            <button type="button" class="back-to-list btn ghost" id="back-to-list">← Torna alla lista</button>
+                            <div id="list-detail-content" class="node-details-content"></div>
+                        </div>
+                    </div>
+
+                    <div id="results-map-view" class="results-panel" hidden>
+                        <div class="results-map-layout">
+                            <div class="results-map-widget card">
+                                <div id="ai-results-map" aria-label="Mappa risultati a Trento"></div>
+                            </div>
+                            <div id="map-detail-card" class="card map-detail-card" hidden>
+                                <div class="map-detail-header">
+                                    <h3>Dettagli risultato</h3>
+                                    <button type="button" class="panel-close" id="close-map-detail" aria-label="Chiudi dettagli">✕</button>
+                                </div>
+                                <div id="map-detail-content" class="node-details-content"></div>
+                            </div>
+                            <p id="map-hint" class="map-hint">Clicca un pin sulla mappa per vedere i dettagli del risultato.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer>
+        <div class="wrap">
+            <span>© 2026 ScroogeMap · Ingegneria del Software 2026/2027</span>
+            <span>Lorenzo Predelli – Samuel Tardiota – Matteo Dallaserra</span>
+        </div>
+    </footer>
+
+    <script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+    <script src="https://unpkg.com/pmtiles@3.2.0/dist/pmtiles.js"></script>
+    <script type="module">
+        import { layers, namedFlavor } from 'https://esm.sh/@protomaps/basemaps@5.7.0';
+        window.protomapsBasemaps = { layers: layers, namedFlavor: namedFlavor };
+        window.dispatchEvent(new Event('basemaps-ready'));
+    </script>
+    <script>
+        (function () {
+            var dataset = [
+                { id: 'a1', name: 'Famiglia Cooperativa - Via Brennero', address: 'Via Brennero 120, Trento', basePrice: 1.49, distanceKm: 0.4, categories: ['alimentari'], openStatus: 'Aperto ora', openInfo: 'Chiude alle 20:00', reports: ['Prezzo verificato oggi da 3 utenti'], details: ['Orari: Lun–Sab 8:00–20:00', 'Ultimo aggiornamento: oggi, 09:20', 'Servizi: parcheggio clienti'], lng: 11.1135, lat: 46.0905, keywords: ['latte', 'alimentari', 'spesa', 'pane', 'pasta'] },
+                { id: 'a2', name: 'Conad City - Via Roma', address: 'Via Roma 55, Trento', basePrice: 1.39, distanceKm: 0.6, categories: ['alimentari'], openStatus: 'Aperto ora', openInfo: 'Chiude alle 19:30', reports: ['Prezzo confermato da 5 utenti'], details: ['Orari: Lun–Sab 8:30–19:30', 'Ultimo aggiornamento: oggi, 08:10', 'Servizi: prodotti bio'], lng: 11.1210, lat: 46.0697, keywords: ['latte', 'alimentari', 'spesa', 'uova', 'acqua'] },
+                { id: 'a3', name: 'Despar - Via Milano', address: 'Via Milano 14, Trento', basePrice: 1.55, distanceKm: 1.0, categories: ['alimentari'], openStatus: 'Aperto ora', openInfo: 'Chiude alle 20:00', reports: ['1 segnalazione: offerte settimanali disponibili'], details: ['Orari: Lun–Sab 8:00–20:00', 'Ultimo aggiornamento: ieri, 17:30', 'Servizi: gastronomia'], lng: 11.1185, lat: 46.0642, keywords: ['latte', 'alimentari', 'spesa', 'frutta'] },
+                { id: 'c1', name: 'IP - Via del Brennero', address: 'Via del Brennero 65, Trento', basePrice: 1.789, distanceKm: 0.8, categories: ['carburanti'], openStatus: 'Aperto ora', openInfo: 'Self service H24', reports: ['1 segnalazione: prezzo più basso della zona'], details: ['Carburanti: benzina, diesel, GPL', 'Ultimo aggiornamento: ieri, 18:05', 'Servizi: autolavaggio'], lng: 11.1120, lat: 46.0820, keywords: ['benzina', 'diesel', 'carburante', 'gpl'] },
+                { id: 'c2', name: 'Q8 - Via dei Mille', address: 'Via dei Mille 18, Trento', basePrice: 1.815, distanceKm: 1.9, categories: ['carburanti', 'alimentari'], openStatus: 'Aperto ora', openInfo: 'Shop aperto fino alle 21:00', reports: ['3 segnalazioni: shop fornito'], details: ['Carburanti: benzina, diesel', 'Ultimo aggiornamento: oggi, 07:50', 'Servizi: bar/shop'], lng: 11.1298, lat: 46.0615, keywords: ['benzina', 'diesel', 'carburante'] },
+                { id: 'c3', name: 'Eni - Via San Pio X', address: 'Via San Pio X 24, Trento', basePrice: 1.799, distanceKm: 1.3, categories: ['carburanti'], openStatus: 'Aperto ora', openInfo: 'Self service H24', reports: ['Prezzo stabile negli ultimi giorni'], details: ['Carburanti: benzina, diesel', 'Ultimo aggiornamento: oggi, 06:40', 'Servizi: gonfiaggio pneumatici'], lng: 11.1168, lat: 46.0558, keywords: ['benzina', 'diesel', 'carburante'] },
+                { id: 'p1', name: 'Parcheggio Area ex Zuffo', address: 'Piazza di Centa, Trento', basePrice: 1.5, distanceKm: 1.1, categories: ['parcheggi'], openStatus: 'Aperto', openInfo: 'Disponibilità media', reports: ['2 segnalazioni: spesso pieno in serata'], details: ['Orari: 7:00–22:00', 'Ultimo aggiornamento: oggi, 11:40', 'Pagamento: app o cassa automatica'], lng: 11.1248, lat: 46.0758, keywords: ['parcheggio', 'sosta', 'auto'] },
+                { id: 'p2', name: 'Parcheggio Autosilo Buonconsiglio', address: 'Via F. Petrarca, Trento', basePrice: 1.2, distanceKm: 1.4, categories: ['parcheggi'], openStatus: 'Aperto', openInfo: 'Molti posti liberi', reports: ['Nessuna segnalazione recente'], details: ['Orari: H24', 'Ultimo aggiornamento: oggi, 10:05', 'Servizi: ricarica EV'], lng: 11.1275, lat: 46.0719, keywords: ['parcheggio', 'sosta', 'auto'] },
+                { id: 'p3', name: 'Parcheggio piazza Fiera', address: 'Piazza Fiera, Trento', basePrice: 1.8, distanceKm: 0.9, categories: ['parcheggi'], openStatus: 'Aperto', openInfo: 'Disponibilità variabile', reports: ['1 segnalazione: comodo per il centro'], details: ['Orari: 8:00–21:00', 'Ultimo aggiornamento: ieri, 16:20', 'Pagamento: parcometro'], lng: 11.1235, lat: 46.0648, keywords: ['parcheggio', 'sosta', 'auto'] }
+            ];
+
+            var state = { query: '', status: 'idle', resultsView: 'list', results: [], selectedId: null, listDetail: false };
+            var map = null, markersById = {}, mapInitialized = false, loadingTimer = null;
+
+            var form = document.getElementById('ai-search-form');
+            var input = document.getElementById('product-query');
+            var submitBtn = document.getElementById('search-submit');
+            var viewButtons = Array.prototype.slice.call(document.querySelectorAll('[data-results-view]'));
+            var idleEl = document.getElementById('results-idle');
+            var loadingEl = document.getElementById('results-loading');
+            var emptyEl = document.getElementById('results-empty');
+            var contentEl = document.getElementById('results-content');
+            var listViewEl = document.getElementById('results-list-view');
+            var mapViewEl = document.getElementById('results-map-view');
+            var listInner = document.getElementById('list-view-inner');
+            var listDetailView = document.getElementById('list-detail-view');
+            var listDetailContent = document.getElementById('list-detail-content');
+            var backToList = document.getElementById('back-to-list');
+            var resultsList = document.getElementById('results-list');
+            var resultsCount = document.getElementById('results-count');
+            var loadingQuery = document.getElementById('loading-query');
+            var emptyMessage = document.getElementById('empty-message');
+            var mapDetailCard = document.getElementById('map-detail-card');
+            var mapDetailContent = document.getElementById('map-detail-content');
+            var closeMapDetail = document.getElementById('close-map-detail');
+            var mapHint = document.getElementById('map-hint');
+
+            function formatDistance(km) { return km.toFixed(1).replace('.', ',') + ' km'; }
+            function tagLabel(cat) { return cat === 'alimentari' ? 'Alimentari' : cat === 'carburanti' ? 'Carburanti' : cat === 'parcheggi' ? 'Parcheggi' : cat; }
+            function formatEuro(v) { return '€ ' + Number(v).toFixed(v < 10 ? 3 : 2).replace('.', ','); }
+
+            function priceLabelFor(item, query) {
+                var q = query.toLowerCase();
+                if (item.categories.indexOf('carburanti') !== -1 || /benzina|diesel|gpl|carbur/.test(q)) return formatEuro(item.basePrice) + ' /L';
+                if (item.categories.indexOf('parcheggi') !== -1 || /parchegg|sosta/.test(q)) return formatEuro(item.basePrice) + ' /h';
+                return formatEuro(item.basePrice) + ' · ' + (query || 'prodotto');
+            }
+
+            function makeResults(query) {
+                var q = query.trim().toLowerCase();
+                var matched = dataset.filter(function (item) {
+                    return item.keywords.some(function (k) { return q.indexOf(k) !== -1 || k.indexOf(q) !== -1; }) ||
+                        item.name.toLowerCase().indexOf(q) !== -1;
+                });
+                if (!matched.length) matched = dataset.slice(0, 4);
+                return matched.map(function (item) {
+                    return Object.assign({}, item, { priceLabel: priceLabelFor(item, query), query: query });
+                }).sort(function (a, b) { return a.basePrice - b.basePrice || a.distanceKm - b.distanceKm; });
+            }
+
+            function setStatus(status) {
+                state.status = status;
+                idleEl.hidden = status !== 'idle';
+                loadingEl.hidden = status !== 'loading';
+                emptyEl.hidden = status !== 'empty';
+                contentEl.hidden = !(status === 'results');
+                var busy = status === 'loading';
+                document.getElementById('results-section').setAttribute('aria-busy', busy ? 'true' : 'false');
+            }
+
+            function renderDetailsHTML(node) {
+                if (!node) return '';
+                var tags = node.categories.map(function (c) { return '<span class="tag tag--' + c + '">' + tagLabel(c) + '</span>'; }).join('');
+                var reports = (node.reports || []).map(function (r) { return '<li>' + r + '</li>'; }).join('');
+                var extra = (node.details || []).map(function (d) { return '<li>' + d + '</li>'; }).join('');
+                return '<div class="details-header"><h3>' + node.name + '</h3><p class="node-address">' + node.address + '</p>' +
+                    '<div class="details-meta"><span class="price">' + node.priceLabel + '</span><span class="distance">' + formatDistance(node.distanceKm) + '</span></div>' +
+                    '<div class="tags">' + tags + '</div></div>' +
+                    '<div class="details-block"><h4>Stato</h4><p class="status-open">' + node.openStatus + '</p><p>' + node.openInfo + '</p></div>' +
+                    '<div class="details-block"><h4>Segnalazioni utenti</h4>' + (reports ? '<ul>' + reports + '</ul>' : '<p>Nessuna segnalazione al momento.</p>') + '</div>' +
+                    '<div class="details-block"><h4>Altri dettagli</h4>' + (extra ? '<ul>' + extra + '</ul>' : '<p>—</p>') + '</div>';
+            }
+
+            function updateMarkerSelection() {
+                Object.keys(markersById).forEach(function (id) {
+                    var m = markersById[id];
+                    if (m && m.getElement) m.getElement().classList.toggle('is-selected', id === state.selectedId);
+                });
+            }
+
+            function selectResult(id, source) {
+                var node = state.results.filter(function (n) { return n.id === id; })[0];
+                if (!node) return;
+                state.selectedId = id;
+                updateMarkerSelection();
+                if (state.resultsView === 'list') {
+                    state.listDetail = true;
+                    listInner.hidden = true;
+                    listDetailView.hidden = false;
+                    listDetailContent.innerHTML = renderDetailsHTML(node);
+                } else {
+                    mapDetailCard.hidden = false;
+                    if (mapHint) mapHint.hidden = true;
+                    mapDetailContent.innerHTML = renderDetailsHTML(node);
+                    if (source === 'list' && map && typeof node.lng === 'number') {
+                        try { map.easeTo({ center: [node.lng, node.lat], zoom: Math.max(map.getZoom(), 14), duration: 500 }); } catch (e) {}
+                    }
+                }
+                renderList();
+            }
+
+            function showListIndex() {
+                state.listDetail = false;
+                state.selectedId = null;
+                listInner.hidden = false;
+                listDetailView.hidden = true;
+                mapDetailCard.hidden = true;
+                if (mapHint) mapHint.hidden = false;
+                updateMarkerSelection();
+                renderList();
+            }
+
+            function renderList() {
+                var results = state.results;
+                resultsCount.textContent = results.length + (results.length === 1 ? ' risultato trovato' : ' risultati trovati') + ' per "' + state.query + '"';
+                resultsList.innerHTML = results.map(function (node) {
+                    var selected = node.id === state.selectedId ? ' is-selected' : '';
+                    var pressed = node.id === state.selectedId ? 'true' : 'false';
+                    var tags = node.categories.map(function (c) { return '<span class="tag tag--' + c + '">' + tagLabel(c) + '</span>'; }).join('');
+                    return '<button type="button" class="node-card' + selected + '" data-result-id="' + node.id + '" aria-pressed="' + pressed + '">' +
+                        '<div class="node-card-main"><h3>' + node.name + '</h3><p class="node-address">' + node.address + '</p>' +
+                        '<div class="node-meta"><span class="price">' + node.priceLabel + '</span><span class="distance">' + formatDistance(node.distanceKm) + '</span></div>' +
+                        '<div class="tags">' + tags + '</div></div></button>';
+                }).join('');
+                Array.prototype.forEach.call(resultsList.querySelectorAll('.node-card'), function (btn) {
+                    btn.addEventListener('click', function () { selectResult(btn.getAttribute('data-result-id'), 'list'); });
+                });
+            }
+
+            function categoryClass(categories) {
+                if (categories.indexOf('alimentari') !== -1) return 'map-pin--alimentari';
+                if (categories.indexOf('carburanti') !== -1) return 'map-pin--carburanti';
+                if (categories.indexOf('parcheggi') !== -1) return 'map-pin--parcheggi';
+                return '';
+            }
+
+            function clearMarkers() {
+                Object.keys(markersById).forEach(function (id) { try { markersById[id].remove(); } catch (e) {} });
+                markersById = {};
+            }
+
+            function buildStyle() {
+                return {
+                    version: 8,
+                    glyphs: 'https://protomaps.github.io/basemaps-assets/fonts/{fontstack}/{range}.pbf',
+                    sprite: 'https://protomaps.github.io/basemaps-assets/sprites/v4/light',
+                    sources: { trento: { type: 'vector', url: 'pmtiles://assets/trento.pmtiles', attribution: '© OpenStreetMap' } },
+                    layers: protomapsBasemaps.layers('trento', protomapsBasemaps.namedFlavor('light'), { lang: 'it' })
+                };
+            }
+
+            function ensureMap(cb) {
+                if (mapInitialized) { if (cb) cb(); return; }
+                function init() {
+                    try {
+                        var protocol = new pmtiles.Protocol();
+                        maplibregl.addProtocol('pmtiles', protocol.tile);
+                        map = new maplibregl.Map({ container: 'ai-results-map', style: buildStyle(), center: [11.1217, 46.0679], zoom: 12.5, maxZoom: 15 });
+                        map.addControl(new maplibregl.NavigationControl({ showCompass: false }), 'bottom-left');
+                        map.on('load', function () { mapInitialized = true; if (cb) cb(); });
+                        map.on('error', function () {});
+                    } catch (e) { mapInitialized = true; if (cb) cb(); }
+                }
+                if (window.protomapsBasemaps) init(); else window.addEventListener('basemaps-ready', init, { once: true });
+            }
+
+            function updateMapMarkers() {
+                if (!map) return;
+                clearMarkers();
+                state.results.forEach(function (node) {
+                    if (typeof node.lng !== 'number') return;
+                    var el = document.createElement('button');
+                    el.type = 'button';
+                    el.className = 'map-pin ' + categoryClass(node.categories);
+                    el.setAttribute('aria-label', node.name);
+                    el.title = node.name;
+                    el.addEventListener('click', function (e) { e.stopPropagation(); selectResult(node.id, 'map'); });
+                    markersById[node.id] = new maplibregl.Marker({ element: el, anchor: 'bottom' }).setLngLat([node.lng, node.lat]).addTo(map);
+                });
+                updateMarkerSelection();
+                if (state.results.length) {
+                    var bounds = new maplibregl.LngLatBounds();
+                    state.results.forEach(function (n) { if (typeof n.lng === 'number') bounds.extend([n.lng, n.lat]); });
+                    try { if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 40, maxZoom: 14, duration: 0 }); } catch (e) {}
+                }
+            }
+
+            function switchResultsView(view) {
+                state.resultsView = view;
+                viewButtons.forEach(function (b) {
+                    var active = b.getAttribute('data-results-view') === view;
+                    b.classList.toggle('is-active', active);
+                    b.setAttribute('aria-pressed', active ? 'true' : 'false');
+                });
+                if (state.status !== 'results') return;
+                listViewEl.hidden = view !== 'list';
+                mapViewEl.hidden = view !== 'map';
+                if (view === 'list') {
+                    mapDetailCard.hidden = true;
+                    if (mapHint) mapHint.hidden = false;
+                    if (state.selectedId && !state.listDetail) state.selectedId = null;
+                    if (!state.listDetail) { listInner.hidden = false; listDetailView.hidden = true; }
+                    updateMarkerSelection();
+                    renderList();
+                } else {
+                    if (state.listDetail) { state.listDetail = false; listInner.hidden = false; listDetailView.hidden = true; }
+                    ensureMap(function () {
+                        setTimeout(function () { try { map.resize(); } catch (e) {} updateMapMarkers(); }, 50);
+                    });
+                    if (state.selectedId) {
+                        var node = state.results.filter(function (n) { return n.id === state.selectedId; })[0];
+                        if (node) {
+                            mapDetailCard.hidden = false;
+                            if (mapHint) mapHint.hidden = true;
+                            mapDetailContent.innerHTML = renderDetailsHTML(node);
+                        }
+                    } else {
+                        mapDetailCard.hidden = true;
+                        if (mapHint) mapHint.hidden = false;
+                    }
+                }
+            }
+
+            function runSearch(query) {
+                state.query = query;
+                state.selectedId = null;
+                state.listDetail = false;
+                listInner.hidden = false;
+                listDetailView.hidden = true;
+                mapDetailCard.hidden = true;
+                if (mapHint) mapHint.hidden = false;
+                loadingQuery.textContent = query;
+                setStatus('loading');
+                if (loadingTimer) clearTimeout(loadingTimer);
+                loadingTimer = setTimeout(function () {
+                    var results = makeResults(query);
+                    state.results = results;
+                    if (!results.length) {
+                        emptyMessage.textContent = 'Nessun risultato trovato per "' + query + '" a Trento.';
+                        setStatus('empty');
+                        return;
+                    }
+                    setStatus('results');
+                    listViewEl.hidden = state.resultsView !== 'list';
+                    mapViewEl.hidden = state.resultsView !== 'map';
+                    renderList();
+                    if (state.resultsView === 'map') {
+                        ensureMap(function () { setTimeout(function () { try { map.resize(); } catch (e) {} updateMapMarkers(); }, 50); });
+                    } else {
+                        if (mapInitialized) updateMapMarkers();
+                    }
+                }, 1200);
+            }
+
+            if (form) {
+                form.addEventListener('submit', function (e) {
+                    e.preventDefault();
+                    var q = (input.value || '').trim();
+                    if (!q) return;
+                    submitBtn.disabled = true;
+                    runSearch(q);
+                    setTimeout(function () { submitBtn.disabled = false; }, 1300);
+                });
+            }
+
+            viewButtons.forEach(function (btn) {
+                btn.addEventListener('click', function () { switchResultsView(btn.getAttribute('data-results-view')); });
+            });
+
+            if (backToList) backToList.addEventListener('click', function () { showListIndex(); });
+            if (closeMapDetail) closeMapDetail.addEventListener('click', function () { state.selectedId = null; mapDetailCard.hidden = true; if (mapHint) mapHint.hidden = false; updateMarkerSelection(); renderList(); });
+
+            setStatus('idle');
+        })();
+    </script>
+</body>
+
+</html>
